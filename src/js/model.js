@@ -1,36 +1,56 @@
 import { async } from "regenerator-runtime";
+import { API_URL } from "./config";
+import { getJSON } from "./helpers";
+
 
 export const state = {
-    recipe: {}
+    recipe: {},
+    search: {
+        query: '',
+        results: []
+    }
 };
 
 export const loadRecipe = async function(id) {
     try {
-        const res = await fetch(
-            `https://forkify-api.herokuapp.com/api/v2/recipes/${id}`
-          );
-          const data = await res.json();
+        const data = await getJSON(`${API_URL}${id}`);
       
-          if(!res.ok) throw new Error(`${data.message} (${res.status})`);
-      
-      
-          const {recipe} = data.data;
-      
-          state.recipe = {
-            id: recipe.id,
-            title: recipe.title,
-            publisher: recipe.publisher,
-            sourceUrl: recipe.source_url,
-            image: recipe.image_url,
-            servings: recipe.servings,
-            cookingTime: recipe.cooking_time,
-            ingredients: recipe.ingredients
-          };
-          console.log(state.recipe);
+        const {recipe} = data.data;
+    
+        state.recipe = {
+        id: recipe.id,
+        title: recipe.title,
+        publisher: recipe.publisher,
+        sourceUrl: recipe.source_url,
+        image: recipe.image_url,
+        servings: recipe.servings,
+        cookingTime: recipe.cooking_time,
+        ingredients: recipe.ingredients
+        };
     } catch (err) {
-        alert(err);
-    };
-   
-  
-      
+        // Temporary error handling
+        console.error(`${err}`);
+        throw err;
+    }; 
+};
+
+
+export const loadSearchResults = async function(query) {
+    try {
+        state.search.query = query;
+        const data = await getJSON(`${API_URL}?search=${query}`);
+        console.log(data);
+
+        state.search.results = data.data.recipes.map(rec => {
+            return {
+                id: rec.id,
+                title: rec.title,
+                publisher: rec.publisher,
+                sourceUrl: rec.source_url,
+                image: rec.image_url,
+            };
+        });
+    } catch (err) {
+        throw err;
+    }
 };

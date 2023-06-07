@@ -4,6 +4,7 @@ import recipeView from './views/recipeView';
 import searchView from './views/searchView';
 import resultsView from './views/resultsView';
 import paginationView from './views/paginationView';
+import bookmarksView from './views/bookmarksView';
 
 
 // import icons from '../img/icons.svg';  // Parcel 1
@@ -26,13 +27,16 @@ const controlRecipes = async function() {
     // 0) Update results view to mark selected search results
     resultsView.update(model.getSearchResultsPage());
 
+    // 1) Updating the bookmarks view
+    bookmarksView.update(model.state.bookmarks);
 
-    // 1) Loading recipe
+    // 2) Loading recipe
     await model.loadRecipe(id);
 
 
-    // 2) Rendering the recipe
+    // 3) Rendering the recipe
     recipeView.render(model.state.recipe);
+
 
   } catch (err) {
     recipeView.renderError();
@@ -79,10 +83,29 @@ const controlServings = function(newServings) {
   recipeView.update(model.state.recipe);
 }
 
+const controlAddBookmark = function() {
+
+  // Add or remove bookmarks
+  if (!model.state.recipe.bookmarked) model.addBookmark(model.state.recipe);
+  else model.deleteBookmark(model.state.recipe.id);
+
+  // update recipe view
+  recipeView.update(model.state.recipe);
+
+  // Render bookmarks
+  bookmarksView.render(model.state.bookmarks)
+}
+
+const controlBookmarks = function() {
+  bookmarksView.render(model.state.bookmarks)
+}
+
 // Publisher subscriber pattern
 const init = function() {
+  bookmarksView.addHandlerRender(controlBookmarks);
   recipeView.addHandlerRender(controlRecipes);
   recipeView.addHandlerUpdateServings(controlServings);
+  recipeView.addHandlerAddBookmark(controlAddBookmark);
   searchView.addHandlerSearch(controlSearchResults);
   paginationView.addHandlerClick(controlPagination);
 }

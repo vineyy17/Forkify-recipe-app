@@ -10,9 +10,9 @@ import paginationView from './views/paginationView';
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 
-if(module.hot) {
-  module.hot.accept();
-}
+// if(module.hot) {
+//   module.hot.accept();
+// }
 
 
 const controlRecipes = async function() {
@@ -22,6 +22,9 @@ const controlRecipes = async function() {
     if(!id) return;
 
     recipeView.renderSpinner();
+
+    // 0) Update results view to mark selected search results
+    resultsView.update(model.getSearchResultsPage());
 
 
     // 1) Loading recipe
@@ -34,6 +37,7 @@ const controlRecipes = async function() {
   } catch (err) {
     recipeView.renderError();
   }
+
 };
 
 const controlSearchResults = async function() {
@@ -67,9 +71,18 @@ const controlPagination = function(goToPage) {
 
 }
 
+const controlServings = function(newServings) {
+  // Update the recipe servings (in state)
+  model.updateServings(newServings);
+
+  // Update the recipe view
+  recipeView.update(model.state.recipe);
+}
+
 // Publisher subscriber pattern
 const init = function() {
   recipeView.addHandlerRender(controlRecipes);
+  recipeView.addHandlerUpdateServings(controlServings);
   searchView.addHandlerSearch(controlSearchResults);
   paginationView.addHandlerClick(controlPagination);
 }
